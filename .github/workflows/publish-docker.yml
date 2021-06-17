@@ -1,0 +1,43 @@
+name: Publish Docker images
+
+on:
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+
+jobs:
+  publish-docker-image-latest:
+    runs-on: ubuntu-latest
+    name: Publish Docker image from master branch
+
+    steps:
+      - name: Check out XBVR repo
+        uses: actions/checkout@v2
+        with:
+          ref: master
+      - name: Push to Docker Hub
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: coolmintchocolate/xbvr
+          push: true
+          tags: latest
+
+  publish-docker-image-dev:
+    runs-on: ubuntu-latest
+    name: Publish Docker image from dev branch
+
+    steps:
+      - name: Check out XBVR repo
+        uses: actions/checkout@v2
+        with:
+          ref: dev
+      - name: Push to Docker Hub
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: coolmintchocolate/xbvr
+          push: true
+          tags: dev
