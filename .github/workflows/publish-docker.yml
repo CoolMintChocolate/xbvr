@@ -1,0 +1,83 @@
+name: Publish Docker images
+
+on:
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+
+jobs:
+  publish-docker-image-latest:
+    runs-on: ubuntu-22.04
+    name: Publish Docker image from master branch
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out XBVR repo
+        uses: actions/checkout@v4
+        with:
+          ref: master
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.22.x
+      - name: Install dependencies
+        run: echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list && sudo apt-get update && sudo apt-get install -y gcc-mingw-w64 goreleaser zip
+      - name: Build UI
+        run: cd ui && yarn install && yarn build
+      - name: Patch nightly version # We change v0.0.0-next version to CURRENT to avoid update prompt
+        run: sed -i 's/{{ \.Tag }}-next/CURRENT/g' .goreleaser.yml
+      - name: Release nightly package
+        run: PATH=$PATH:$HOME/go/bin goreleaser build --id xbvr-linux-amd64 --snapshot --clean && mv dist/xbvr-linux-amd64_linux_amd64_v1/xbvr ./xbvr
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push to Container Registry
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/coolmintchocolate/xbvr:latest
+
+  publish-docker-image-dev:
+    runs-on: ubuntu-22.04
+    name: Publish Docker image from dev branch
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out XBVR repo
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.22.x
+      - name: Install dependencies
+        run: echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list && sudo apt-get update && sudo apt-get install -y gcc-mingw-w64 goreleaser zip
+      - name: Build UI
+        run: cd ui && yarn install && yarn build
+      - name: Patch nightly version # We change v0.0.0-next version to CURRENT to avoid update prompt
+        run: sed -i 's/{{ \.Tag }}-next/CURRENT/g' .goreleaser.yml
+      - name: Release nightly package
+        run: PATH=$PATH:$HOME/go/bin goreleaser build --id xbvr-linux-amd64 --snapshot --clean && mv dist/xbvr-linux-amd64_linux_amd64_v1/xbvr ./xbvr
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push to Container Registry
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/coolmintchocolate/xbvr:dev
