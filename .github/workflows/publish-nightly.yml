@@ -2,7 +2,7 @@ name: Publish nightly packages
 
 on:
   schedule:
-    - cron: "0 7 * * *"
+    - cron: "15 17 * * *"
   workflow_dispatch:
 
 jobs:
