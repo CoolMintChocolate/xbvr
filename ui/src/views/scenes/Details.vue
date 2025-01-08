@@ -793,7 +793,7 @@ watch:{
     },
     playFile (file) {
       this.activeMedia = 1
-      this.updatePlayer('/api/dms/file/' + file.id + '?dnt=true', (file.projection == 'flat' ? 'NONE' : '180'))
+      this.updatePlayer('/api/dms/file/' + file.id + '?dnt=true', 'NONE')
       this.player.play()
     },
     unmatchFile (file) {

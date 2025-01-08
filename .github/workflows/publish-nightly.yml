@@ -2,7 +2,7 @@ name: Publish nightly packages
 
 on:
   schedule:
-    - cron: "0 7 * * *"
+    - cron: "14 16 * * *"
   workflow_dispatch:
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
       - name: Check out XBVR repo
         uses: actions/checkout@v4
         with:
-          ref: master
+          ref: workflows
       - uses: actions/setup-node@v4
         with:
           node-version: "18"
