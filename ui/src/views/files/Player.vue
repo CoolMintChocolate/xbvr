@@ -36,7 +36,7 @@ export default {
   mounted () {
     this.player = videojs(this.$refs.player)
     const vr = this.player.vr({
-      projection: 'flat',
+      projection: 'NONE',
       forceCardboard: false
     })
 
